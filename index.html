@@ -82,4 +82,209 @@
 
     .btn {
       width: 100%;
-      padding
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    /* MAPA DE VAGAS */
+    .grid-vagas {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .vaga {
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 80px;
+    }
+
+    .vaga span {
+      font-size: 0.75rem;
+      font-weight: normal;
+      margin-top: 4px;
+    }
+
+    .livre { background-color: #10b981; }
+    .ocupada { background-color: #ef4444; }
+    .preferencial { border: 3px solid #f59e0b; }
+
+    /* TABELAS */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: white;
+    }
+
+    .badge-pago { background-color: #10b981; }
+    .badge-pendente { background-color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Estacionamento ParkSys</h1>
+    <div>Status do Sistema: <strong>Online</strong></div>
+  </header>
+
+  <div class="dashboard">
+    <aside>
+      <div class="card">
+        <h2>Entrada de Veículo</h2>
+        <form>
+          <div class="form-group">
+            <label>Placa do Veículo</label>
+            <input type="text" placeholder="ABC-1234 ou ABC1D23" required>
+          </div>
+          <div class="form-group">
+            <label>Tipo de Veículo</label>
+            <select>
+              <option>Pequeno / Hatch</option>
+              <option>Médio / Sedan</option>
+              <option>SUV / Grande</option>
+              <option>Motocicleta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Vaga Selecionada</label>
+            <select>
+              <option>A1 (Normal)</option>
+              <option>A2 (Normal)</option>
+              <option>A3 (PCD)</option>
+            </select>
+          </div>
+          <button type="button" class="btn">Registrar Entrada</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Resumo do Dia</h2>
+        <table>
+          <tr>
+            <td>Veículos Ativos:</td>
+            <td><strong>12</strong></td>
+          </tr>
+          <tr>
+            <td>Entradas Hoje:</td>
+            <td><strong>45</strong></td>
+          </tr>
+          <tr>
+            <td>Faturamento Estimado:</td>
+            <td><strong>R$ 680,00</strong></td>
+          </tr>
+        </table>
+      </div>
+    </aside>
+
+    <main>
+      <div class="card">
+        <h2>Status das Vagas</h2>
+        <div class="grid-vagas">
+          <div class="vaga livre">
+            A1
+            <span>Livre</span>
+          </div>
+          <div class="vaga ocupada">
+            A2
+            <span>ABC-1234</span>
+          </div>
+          <div class="vaga livre preferencial">
+            A3
+            <span>PCD (Livre)</span>
+          </div>
+          <div class="vaga ocupada preferencial">
+            A4
+            <span>XYZ-9876</span>
+          </div>
+          <div class="vaga livre">
+            B1
+            <span>Livre</span>
+          </div>
+          <div class="vaga ocupada">
+            B2
+            <span>KLY-5543</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Movimentações Recentes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Entrada</th>
+              <th>Vaga</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ABC-1234</td>
+              <td>14:30</td>
+              <td>A2</td>
+              <td>Avulso</td>
+              <td><span class="badge badge-pendente">Em Aberto</span></td>
+              <td><button style="padding: 3px 8px; cursor:pointer;">Saída</button></td>
+            </tr>
+            <tr>
+              <td>XYZ-9876</td>
+              <td>12:15</td>
+              <td>A4</td>
+              <td>Mensalista</td>
+              <td><span class="badge badge-pago">Liberado</span></td>
+              <td><button style="padding: 3px 8px; cursor:pointer;">Detalhes</button></td>
+            </tr>
+            <tr>
+              <td>MNO-3322</td>
+              <td>10:00</td>
+              <td>B1</td>
+              <td>Avulso</td>
+              <td><span class="badge badge-pago">Pago (R$ 20,00)</span></td>
+              <td>-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>
