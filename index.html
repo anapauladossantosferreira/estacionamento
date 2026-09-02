@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Gestão de Estacionamento</title>
   <style>
-    /* RESET E ESTILOS GERAIS */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -30,7 +29,6 @@
       align-items: center;
     }
 
-    /* CONTAINER PRINCIPAL */
     .dashboard {
       display: grid;
       grid-template-columns: 1fr 2fr;
@@ -43,7 +41,6 @@
       }
     }
 
-    /* CARDS E PAINÉIS */
     .card {
       background: #fff;
       padding: 20px;
@@ -60,7 +57,6 @@
       padding-bottom: 8px;
     }
 
-    /* FORMULÁRIOS */
     .form-group {
       margin-bottom: 12px;
     }
@@ -96,15 +92,14 @@
       background-color: #1d4ed8;
     }
 
-    /* MAPA DE VAGAS */
     .grid-vagas {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
       gap: 10px;
     }
 
     .vaga {
-      padding: 15px;
+      padding: 15px 5px;
       border-radius: 6px;
       text-align: center;
       font-weight: bold;
@@ -112,20 +107,20 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      min-height: 80px;
+      min-height: 75px;
     }
 
     .vaga span {
       font-size: 0.75rem;
       font-weight: normal;
       margin-top: 4px;
+      word-break: break-all;
     }
 
     .livre { background-color: #10b981; }
     .ocupada { background-color: #ef4444; }
     .preferencial { border: 3px solid #f59e0b; }
 
-    /* TABELAS */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -166,31 +161,26 @@
     <aside>
       <div class="card">
         <h2>Entrada de Veículo</h2>
-        <form id="form-entrada">
-          <div class="form-group">
-            <label>Placa do Veículo</label>
-            <input type="text" id="campo-placa" placeholder="ABC-1234" required>
-          </div>
-          <div class="form-group">
-            <label>Tipo de Veículo</label>
-            <select id="select-tipo">
-              <option>Pequeno / Hatch</option>
-              <option>Médio / Sedan</option>
-              <option>SUV / Grande</option>
-              <option>Motocicleta</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Vaga Selecionada</label>
-            <select id="select-vaga">
-              <option value="A1">A1 (Normal)</option>
-              <option value="A2">A2 (Normal)</option>
-              <option value="A3">A3 (PCD)</option>
-              <option value="B1">B1 (Normal)</option>
-            </select>
-          </div>
-          <button type="submit" class="btn">Registrar Entrada</button>
-        </form>
+        <div class="form-group">
+          <label>Placa do Veículo</label>
+          <input type="text" id="campo-placa" placeholder="ABC-1234" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Tipo de Veículo</label>
+          <select id="select-tipo">
+            <option>Pequeno / Hatch</option>
+            <option>Médio / Sedan</option>
+            <option>SUV / Grande</option>
+            <option>Motocicleta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Vaga Selecionada</label>
+          <select id="select-vaga">
+            <!-- Vagas serão geradas pelo JS -->
+          </select>
+        </div>
+        <button type="button" id="btn-registrar" class="btn">Registrar Entrada</button>
       </div>
 
       <div class="card">
@@ -198,11 +188,7 @@
         <table>
           <tr>
             <td>Veículos Ativos:</td>
-            <td><strong id="total-ativos">1</strong></td>
-          </tr>
-          <tr>
-            <td>Faturamento Estimado:</td>
-            <td><strong>R$ 680,00</strong></td>
+            <td><strong id="total-ativos">0</strong></td>
           </tr>
         </table>
       </div>
@@ -211,12 +197,479 @@
     <main>
       <div class="card">
         <h2>Status das Vagas</h2>
-        <div class="grid-vagas">
-          <div class="vaga livre" data-codigo="A1">
-            A1
-            <span>Livre</span>
-          </div>
-          <div class="vaga ocupada" data-codigo="A2">
-            A2
-            <span>ABC-1234</span>
-          </div>
+        <div class="grid-vagas" id="container-vagas">
+          <!-- Vagas serão geradas pelo JS -->
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Movimentações Recentes</h2>
+        <table id="tabela-movimentos">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Entrada</th>
+              <th>Vaga</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Registros inseridos via JS -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Lista de vagas do estacionamento
+    const listaVagas = [
+      { codigo: 'A1', tipo: 'Normal' },
+      { codigo: 'A2', tipo: 'Normal' },
+      { codigo: 'A3', tipo: 'PCD' },
+      { codigo: 'A4', tipo: 'Idoso' },
+      { codigo: 'A5', tipo: 'Normal' },
+      { codigo: 'B1', tipo: 'Normal' },
+      { codigo: 'B2', tipo: 'Normal' },
+      { codigo: 'B3', tipo: 'Normal' },
+      { codigo: 'B4', tipo: 'Normal' },
+      { codigo: 'B5', tipo: 'Normal' }
+    ];
+
+    const containerVagas = document.getElementById('container-vagas');
+    const selectVaga = document.getElementById('select-vaga');
+    const btnRegistrar = document.getElementById('btn-registrar');
+    const inputPlaca = document.getElementById('campo-placa');
+    const tabelaCorpo = document.querySelector('#tabela-movimentos tbody');
+    const totalAtivos = document.getElementById('total-ativos');
+
+    let ativosCount = 0;
+
+    // Inicializa o Mapa de Vagas e o Select
+    function carregarVagas() {
+      containerVagas.innerHTML = '';
+      selectVaga.innerHTML = '';
+
+      listaVagas.forEach(vaga => {
+        // Criar opções no menu dropdown
+        const opcao = document.createElement('option');
+        opcao.value = vaga.codigo;
+        opcao.textContent = `${vaga.codigo} (${vaga.tipo})`;
+        selectVaga.appendChild(opcao);
+
+        // Criar elementos no mapa de vagas
+        const divVaga = document.createElement('div');
+        divVaga.className = `vaga livre ${vaga.tipo !== 'Normal' ? 'preferencial' : ''}`;
+        divVaga.setAttribute('data-codigo', vaga.codigo);
+        divVaga.innerHTML = `${vaga.codigo} <span>${vaga.tipo !== 'Normal' ? vaga.tipo : 'Livre'}</span>`;
+        containerVagas.appendChild(divVaga);
+      });
+    }
+
+    // Registrar Entrada
+    btnRegistrar.addEventListener('click', function() {
+      const placa = inputPlaca.value.trim().toUpperCase();
+      const codigoVaga = selectVaga.value;
+
+      if (!placa) {
+        alert('Por favor, informe a placa do veículo.');
+        return;
+      }
+
+      const elementoVaga = document.querySelector(`.vaga[data-codigo="${codigoVaga}"]`);
+
+      if (elementoVaga && elementoVaga.classList.contains('ocupada')) {
+        alert(`A vaga ${codigoVaga} já está ocupada! Escolha outra.`);
+        return;
+      }
+
+      // 1. Atualizar Vaga no Mapa
+      if (elementoVaga) {
+        elementoVaga.classList.remove('livre');
+        elementoVaga.classList.add('ocupada');
+        elementoVaga.querySelector('span').textContent = placa;
+      }
+
+      // 2. Adicionar na Tabela
+      const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const novaLinha = document.createElement('tr');
+      novaLinha.innerHTML = `
+        <td>${placa}</td>
+        <td>${hora}</td>
+        <td>${codigoVaga}</td>
+        <td>Avulso</td>
+        <td><span class="badge badge-pendente">Em Aberto</span></td>
+        <td><button style="padding: 3px 8px; cursor:pointer;" onclick="registrarSaida(this, '${codigoVaga}')">Saída</button></td>
+      `;
+      tabelaCorpo.prepend(novaLinha);
+
+      // 3. Atualizar Contadores e Limpar Campo
+      ativosCount++;
+      totalAtivos.textContent = ativosCount;
+      inputPlaca.value = '';
+    });
+
+    // Registrar Saída
+    function registrarSaida(botao, codigoVaga) {
+      const linha = botao.closest('tr');
+      
+      linha.children[4].innerHTML = '<span class="badge badge-pago">Pago</span>';
+      linha.children[5].textContent = '-';
+
+      const elementoVaga = document.querySelector(`.vaga[data-codigo="${codigoVaga}"]`);
+      if (elementoVaga) {
+        elementoVaga.classList.remove('ocupada');
+        elementoVaga.classList.add('livre');
+        
+        const infoVaga = listaVagas.find(v => v.codigo === codigoVaga);
+        elementoVaga.querySelector('span').textContent = infoVaga.tipo !== 'Normal' ? infoVaga.tipo : 'Livre';
+      }
+
+      ativosCount = Math.max(0, ativosCount - 1);
+      totalAtivos.textContent = ativosCount;
+    }
+
+    // Inicializa as vagas ao carregar a página
+    carregarVagas();
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão de Estacionamento</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      color: #333;
+      padding: 20px;
+    }
+
+    header {
+      background-color: #1e293b;
+      color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #0f172a;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    .grid-vagas {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+    }
+
+    .vaga {
+      padding: 15px 5px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 75px;
+    }
+
+    .vaga span {
+      font-size: 0.75rem;
+      font-weight: normal;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    .livre { background-color: #10b981; }
+    .ocupada { background-color: #ef4444; }
+    .preferencial { border: 3px solid #f59e0b; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: white;
+    }
+
+    .badge-pago { background-color: #10b981; }
+    .badge-pendente { background-color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Estacionamento ParkSys</h1>
+    <div>Status do Sistema: <strong>Online</strong></div>
+  </header>
+
+  <div class="dashboard">
+    <aside>
+      <div class="card">
+        <h2>Entrada de Veículo</h2>
+        <div class="form-group">
+          <label>Placa do Veículo</label>
+          <input type="text" id="campo-placa" placeholder="ABC-1234" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Tipo de Veículo</label>
+          <select id="select-tipo">
+            <option>Pequeno / Hatch</option>
+            <option>Médio / Sedan</option>
+            <option>SUV / Grande</option>
+            <option>Motocicleta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Vaga Selecionada</label>
+          <select id="select-vaga">
+            <!-- Vagas serão geradas pelo JS -->
+          </select>
+        </div>
+        <button type="button" id="btn-registrar" class="btn">Registrar Entrada</button>
+      </div>
+
+      <div class="card">
+        <h2>Resumo do Dia</h2>
+        <table>
+          <tr>
+            <td>Veículos Ativos:</td>
+            <td><strong id="total-ativos">0</strong></td>
+          </tr>
+        </table>
+      </div>
+    </aside>
+
+    <main>
+      <div class="card">
+        <h2>Status das Vagas</h2>
+        <div class="grid-vagas" id="container-vagas">
+          <!-- Vagas serão geradas pelo JS -->
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Movimentações Recentes</h2>
+        <table id="tabela-movimentos">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Entrada</th>
+              <th>Vaga</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Registros inseridos via JS -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Lista de vagas do estacionamento
+    const listaVagas = [
+      { codigo: 'A1', tipo: 'Normal' },
+      { codigo: 'A2', tipo: 'Normal' },
+      { codigo: 'A3', tipo: 'PCD' },
+      { codigo: 'A4', tipo: 'Idoso' },
+      { codigo: 'A5', tipo: 'Normal' },
+      { codigo: 'B1', tipo: 'Normal' },
+      { codigo: 'B2', tipo: 'Normal' },
+      { codigo: 'B3', tipo: 'Normal' },
+      { codigo: 'B4', tipo: 'Normal' },
+      { codigo: 'B5', tipo: 'Normal' }
+    ];
+
+    const containerVagas = document.getElementById('container-vagas');
+    const selectVaga = document.getElementById('select-vaga');
+    const btnRegistrar = document.getElementById('btn-registrar');
+    const inputPlaca = document.getElementById('campo-placa');
+    const tabelaCorpo = document.querySelector('#tabela-movimentos tbody');
+    const totalAtivos = document.getElementById('total-ativos');
+
+    let ativosCount = 0;
+
+    // Inicializa o Mapa de Vagas e o Select
+    function carregarVagas() {
+      containerVagas.innerHTML = '';
+      selectVaga.innerHTML = '';
+
+      listaVagas.forEach(vaga => {
+        // Criar opções no menu dropdown
+        const opcao = document.createElement('option');
+        opcao.value = vaga.codigo;
+        opcao.textContent = `${vaga.codigo} (${vaga.tipo})`;
+        selectVaga.appendChild(opcao);
+
+        // Criar elementos no mapa de vagas
+        const divVaga = document.createElement('div');
+        divVaga.className = `vaga livre ${vaga.tipo !== 'Normal' ? 'preferencial' : ''}`;
+        divVaga.setAttribute('data-codigo', vaga.codigo);
+        divVaga.innerHTML = `${vaga.codigo} <span>${vaga.tipo !== 'Normal' ? vaga.tipo : 'Livre'}</span>`;
+        containerVagas.appendChild(divVaga);
+      });
+    }
+
+    // Registrar Entrada
+    btnRegistrar.addEventListener('click', function() {
+      const placa = inputPlaca.value.trim().toUpperCase();
+      const codigoVaga = selectVaga.value;
+
+      if (!placa) {
+        alert('Por favor, informe a placa do veículo.');
+        return;
+      }
+
+      const elementoVaga = document.querySelector(`.vaga[data-codigo="${codigoVaga}"]`);
+
+      if (elementoVaga && elementoVaga.classList.contains('ocupada')) {
+        alert(`A vaga ${codigoVaga} já está ocupada! Escolha outra.`);
+        return;
+      }
+
+      // 1. Atualizar Vaga no Mapa
+      if (elementoVaga) {
+        elementoVaga.classList.remove('livre');
+        elementoVaga.classList.add('ocupada');
+        elementoVaga.querySelector('span').textContent = placa;
+      }
+
+      // 2. Adicionar na Tabela
+      const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const novaLinha = document.createElement('tr');
+      novaLinha.innerHTML = `
+        <td>${placa}</td>
+        <td>${hora}</td>
+        <td>${codigoVaga}</td>
+        <td>Avulso</td>
+        <td><span class="badge badge-pendente">Em Aberto</span></td>
+        <td><button style="padding: 3px 8px; cursor:pointer;" onclick="registrarSaida(this, '${codigoVaga}')">Saída</button></td>
+      `;
+      tabelaCorpo.prepend(novaLinha);
+
+      // 3. Atualizar Contadores e Limpar Campo
+      ativosCount++;
+      totalAtivos.textContent = ativosCount;
+      inputPlaca.value = '';
+    });
+
+    // Registrar Saída
+    function registrarSaida(botao, codigoVaga) {
+      const linha = botao.closest('tr');
+      
+      linha.children[4].innerHTML = '<span class="badge badge-pago">Pago</span>';
+      linha.children[5].textContent = '-';
+
+      const elementoVaga = document.querySelector(`.vaga[data-codigo="${codigoVaga}"]`);
+      if (elementoVaga) {
+        elementoVaga.classList.remove('ocupada');
+        elementoVaga.classList.add('livre');
+        
+        const infoVaga = listaVagas.find(v => v.codigo === codigoVaga);
+        elementoVaga.querySelector('span').textContent = infoVaga.tipo !== 'Normal' ? infoVaga.tipo : 'Livre';
+      }
+
+      ativosCount = Math.max(0, ativosCount - 1);
+      totalAtivos.textContent = ativosCount;
+    }
+
+    // Inicializa as vagas ao carregar a página
+    carregarVagas();
+  </script>
+</body>
+</html>
