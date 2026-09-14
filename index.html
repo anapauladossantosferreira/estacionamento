@@ -230,11 +230,15 @@
       </div>
 
       <div class="card">
-        <h2>Resumo do Dia</h2>
+        <h2>Relatório do Dia (Vendas)</h2>
         <table>
           <tr>
             <td>Veículos Ativos:</td>
             <td><strong id="total-ativos">0</strong></td>
+          </tr>
+          <tr>
+            <td>Saídas Concluídas:</td>
+            <td><strong id="total-saidas">0</strong></td>
           </tr>
           <tr>
             <td>Faturamento Total:</td>
@@ -253,15 +257,16 @@
       </div>
 
       <div class="card">
-        <h2>Movimentações Recentes</h2>
+        <h2>Relatório de Movimentações (Entrada e Saída)</h2>
         <table id="tabela-movimentos">
           <thead>
             <tr>
               <th>Placa</th>
               <th>Veículo</th>
-              <th>Condutor</th>
-              <th>Entrada</th>
               <th>Vaga</th>
+              <th>Entrada</th>
+              <th>Saída</th>
+              <th>Valor</th>
               <th>Status</th>
               <th>Ação</th>
             </tr>
@@ -275,7 +280,6 @@
   </div>
 
   <script>
-    // Configuração de Vagas
     const listaVagas = [
       { codigo: 'A1', tipo: 'Normal' },
       { codigo: 'A2', tipo: 'Normal' },
@@ -300,27 +304,26 @@
     const selectTipo = document.getElementById('select-tipo');
     const tabelaCorpo = document.querySelector('#tabela-movimentos tbody');
     const totalAtivos = document.getElementById('total-ativos');
+    const totalSaidas = document.getElementById('total-saidas');
     const totalFaturamento = document.getElementById('total-faturamento');
     const erroPlaca = document.getElementById('erro-placa');
 
     let ativosCount = 0;
+    let saidasCount = 0;
     let faturamentoAcumulado = 0;
+    const placasAtivas = new Set(); // Armazena placas ativas para evitar duplicados
 
-    // Função para validar formato de placa real (Brasil tradicional AAA-1234 ou Mercosul AAA1A23)
     function validarPlacaReal(placa) {
       const padraoTradicional = /^[A-Z]{3}-?[0-9]{4}$/;
       const padraoMercosul = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
       return padraoTradicional.test(placa) || padraoMercosul.test(placa);
     }
 
-    // Formata automaticamente adicionando hífen se for placa antiga
     inputPlaca.addEventListener('input', function() {
-      let v = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-      this.value = v;
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
       erroPlaca.style.display = 'none';
     });
 
-    // Inicializa o mapa de vagas e as opções no select
     function carregarVagas() {
       containerVagas.innerHTML = '';
       selectVaga.innerHTML = '';
@@ -339,7 +342,6 @@
       });
     }
 
-    // Registrar Entrada do Veículo
     btnRegistrar.addEventListener('click', function() {
       const placa = inputPlaca.value.trim().toUpperCase();
       const modelo = inputModelo.value.trim();
@@ -348,53 +350,64 @@
       const codigoVaga = selectVaga.value;
       const tipoVeiculo = selectTipo.value;
 
-      // Validação da Placa Real
+      // 1. Validação do Formato da Placa
       if (!validarPlacaReal(placa)) {
         erroPlaca.style.display = 'block';
-        alert('Placa inválida! Informe uma placa válida no formato padrão ou Mercosul.');
+        alert('Placa inválida! Informe uma placa no formato padrão ou Mercosul.');
+        return;
+      }
+
+      // 2. Validação de Placa Duplicada
+      if (placasAtivas.has(placa)) {
+        alert(`O veículo de placa ${placa} já está dentro do estacionamento! Entrada negada.`);
         return;
       }
 
       if (!modelo || !cor) {
-        alert('Por favor, informe a Marca/Modelo e a Cor do veículo.');
+        alert('Por favor, preencha a Marca/Modelo e a Cor do veículo.');
         return;
       }
 
       const elementoVaga = document.querySelector(`.vaga[data-codigo="${codigoVaga}"]`);
 
       if (elementoVaga && elementoVaga.classList.contains('ocupada')) {
-        alert(`A vaga ${codigoVaga} já está ocupada! Escolha outra.`);
+        alert(`A vaga ${codigoVaga} já está ocupada! Selecione outra vaga.`);
         return;
       }
 
-      // 1. Atualizar o Mapa Visual
+      // Atualiza Mapa Visual
       if (elementoVaga) {
         elementoVaga.classList.remove('livre');
         elementoVaga.classList.add('ocupada');
         elementoVaga.querySelector('span').textContent = placa;
       }
 
-      // 2. Registrar na Tabela
-      const horaAtual = new Date();
-      const horaEntradaTexto = horaAtual.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      // Adiciona Placa na lista de veículos ativos
+      placasAtivas.add(placa);
+
+      // Registra na Tabela
+      const horaEntrada = new Date();
+      const horaEntradaTexto = horaEntrada.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       const novaLinha = document.createElement('tr');
-      novaLinha.setAttribute('data-hora-entrada', horaAtual.getTime());
+      novaLinha.setAttribute('data-placa', placa);
+      novaLinha.setAttribute('data-hora-entrada', horaEntrada.getTime());
       novaLinha.setAttribute('data-tipo', tipoVeiculo);
 
       novaLinha.innerHTML = `
         <td><strong>${placa}</strong></td>
         <td>${modelo} (${cor})</td>
-        <td>${nome}</td>
-        <td>${horaEntradaTexto}</td>
         <td>${codigoVaga}</td>
+        <td>${horaEntradaTexto}</td>
+        <td>--:--</td>
+        <td>-</td>
         <td><span class="badge badge-pendente">Em Aberto</span></td>
         <td><button style="padding: 3px 8px; cursor:pointer;" onclick="registrarSaida(this, '${codigoVaga}')">Saída</button></td>
       `;
 
       tabelaCorpo.prepend(novaLinha);
 
-      // 3. Limpar Formulário
+      // Limpa os campos do formulário
       ativosCount++;
       totalAtivos.textContent = ativosCount;
       inputPlaca.value = '';
@@ -404,15 +417,16 @@
       inputNascimento.value = '';
     });
 
-    // Registrar Saída e Calcular Valor
     function registrarSaida(botao, codigoVaga) {
       const linha = botao.closest('tr');
+      const placa = linha.getAttribute('data-placa');
       const tempoEntrada = parseInt(linha.getAttribute('data-hora-entrada'));
       const tipo = linha.getAttribute('data-tipo');
-      const tempoSaida = new Date().getTime();
+      const horaSaidaObj = new Date();
+      const horaSaidaTexto = horaSaidaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // Cálculo de permanência (Valor base proporcional por hora)
-      const diferencaHoras = Math.max(1, Math.ceil((tempoSaida - tempoEntrada) / (1000 * 60 * 60))); 
+      // Cálculo financeiro proporcional
+      const diferencaHoras = Math.max(1, Math.ceil((horaSaidaObj.getTime() - tempoEntrada) / (1000 * 60 * 60))); 
       let tarifaHora = 10;
       if (tipo === 'Moto') tarifaHora = 5;
       if (tipo === 'Utilitario') tarifaHora = 15;
@@ -420,13 +434,22 @@
       const valorCobrado = diferencaHoras * tarifaHora;
 
       faturamentoAcumulado += valorCobrado;
+      saidasCount++;
+
+      // Atualiza o Relatório
       totalFaturamento.textContent = `R$ ${faturamentoAcumulado.toFixed(2)}`;
+      totalSaidas.textContent = saidasCount;
 
-      // Atualiza Tabela
-      linha.children[5].innerHTML = `<span class="badge badge-pago">Pago (R$ ${valorCobrado.toFixed(2)})</span>`;
-      linha.children[6].textContent = '-';
+      // Atualiza os dados na Tabela
+      linha.children[4].textContent = horaSaidaTexto; // Hora de Saída
+      linha.children[5].textContent = `R$ ${valorCobrado.toFixed(2)}`; // Valor Cobrado
+      linha.children[6].innerHTML = `<span class="badge badge-pago">Pago</span>`; // Status
+      linha.children[7].textContent = '-'; // Ação
 
-      // Libera a Vaga no Mapa
+      // Libera a placa para novo cadastro
+      placasAtivas.delete(placa);
+
+      // Libera Vaga no Mapa
       const elementoVaga = document.querySelector(`.vaga[data-codigo="${codigoVaga}"]`);
       if (elementoVaga) {
         elementoVaga.classList.remove('ocupada');
